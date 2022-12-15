@@ -1,0 +1,11 @@
+https://dummyjson.com/products?limit=100
+
+https://bluuweb.github.io/tailwindcss/03-personalizar/#extracting-classes-using-apply
+
+.btn {
+    @apply font-rale py-2 px-4 rounded;
+}
+
+.btn-blue {
+    @apply bg-blue-500 text-white;
+}

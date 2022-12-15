@@ -1,0 +1,42 @@
+{
+  "eng": {
+    "translation": {
+      "Home": "Home",
+	  "LogIn": "LogIn",
+	  "LogOut": "LogOut",
+	  "Change Network": "Change Network",
+	  "Products": "Products",
+	  "Product Not Found": "Product Not Found",
+	  "Add to Cart": "Add to Cart",
+	  "Cart is empty": "Cart is empty",
+	  "Remove": "Remove",
+	  "Checkout": "Checkout",
+	  "Quantity": "Quantity",
+	  "Price": "Price",
+	  "Login to proceed checkout": "Login to proceed checkout",
+	  "Discount": "Discount",
+	  "Orders": "Orders",
+	  "Get TestNet USDC": "Get TestNet USDC"
+    }
+  },
+  "es": {
+    "translation": {
+      "Home": "Inicio",
+	  "LogIn": "Conectar",
+	  "LogOut": "Desconectar",
+	  "Change Network": "Cambiar Red",
+	  "Products": "Productos",
+	  "Product Not Found": "Producto No Encontrado",
+	  "Add to Cart": "Añadir al Carrito",
+	  "Cart is empty": "Carrito Vacío",
+	  "Remove": "Eliminar",
+	  "Checkout": "Pagar",
+	  "Quantity": "Cantidad",
+	  "Price": "Precio",
+	  "Login to proceed checkout": "Inicie sesión para continuar con el pago",
+	  "Discount": "Descuento",
+	  "Orders": "Pedidos",
+	  "Get TestNet USDC": "Obtener TestNet USDC"
+    }
+  }
+}
