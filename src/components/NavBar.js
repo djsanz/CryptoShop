@@ -18,7 +18,7 @@ export default function NavBar() {
     return (
         <Navbar fluid rounded class="bg-gray-900 sticky top-0 z-10">
             <React.Fragment key=".0">
-                <Navbar.Brand href="https://localhost:3000">
+                <Navbar.Brand href="https://cryptoshop-lovat.vercel.app">
                     <img src={Logo} className="m-0 mr-3 h-10" alt="PlantillaReact Logo"/>
                     <span className="self-center whitespace-nowrap text-xl font-semibold">CryptoShop</span>
                 </Navbar.Brand>
