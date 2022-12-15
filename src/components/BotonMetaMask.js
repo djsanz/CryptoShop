@@ -96,7 +96,7 @@ export default function BotonMetaMask() {
                 }
             }, 500);
         }else{
-            setNetworkID(window.ethereum.chainId)
+            setNetworkID(window?.ethereum?.chainId)
         }
     },[]);
 
