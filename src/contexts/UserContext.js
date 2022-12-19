@@ -17,7 +17,7 @@ const UserProvider = ({ children }) => {
         });
 		if (cartCtx.length === 0){
 			const TempCart = localStorage.getItem(_Account)
-			if (TempCart.length > 0){
+			if (TempCart?.length > 0){
 				setCartCtx(JSON.parse(TempCart))
 			}
 		}
@@ -32,15 +32,19 @@ const UserProvider = ({ children }) => {
 	// CARRITO COMPRA
     const CartInicitalState = []
 	const [cartCtx, setCartCtx] = useState(CartInicitalState)
+	
+	const resetCartCtx = () => {
+		setCartCtx(CartInicitalState)
+	}
 
-	const addToCartCtx = (productID) => {
+	const addToCartCtx = (productID,precio) => {
 		const updatedCart = cartCtx.filter((item) => item.id !== productID)
 		const SelectedProduct = searchFromCartCtx(productID)
 		if (SelectedProduct !== null){
 			SelectedProduct.cant += 1
 			updatedCart.push(SelectedProduct)
 		}else{
-			updatedCart.push({id: productID, cant: 1})
+			updatedCart.push({id: productID, cant: 1, precio: precio})
 		}
 		updatedCart.sort((a, b) => a.id - b.id);
 		setCartCtx(updatedCart);
@@ -74,6 +78,14 @@ const UserProvider = ({ children }) => {
 		}
 	}
 
+	const CartCtxToContractString = () => {
+		let ContractString = ""
+		cartCtx.forEach((item) => {
+			ContractString += item.id + ":" + item.cant + ":" + item.precio + ","
+		})
+		return ContractString.slice(0, -1);
+	}
+
 	useEffect(() => {
 		if (userCtx.account != null){
 			localStorage.setItem(userCtx.account,JSON.stringify(cartCtx))
@@ -88,7 +100,9 @@ const UserProvider = ({ children }) => {
 		cartCtx,
 		addToCartCtx,
 		deleteFromCartCtx,
-		removeFromCartCtx
+		removeFromCartCtx,
+		CartCtxToContractString,
+		resetCartCtx
     };
 
     return (

@@ -7,7 +7,7 @@ const ImageLoader = (props) => {
 	const src = props.src
 	const alt = props.alt
 	const className = props.className?props.className + " inline":"inline"
-
+	const onClick = props.onClick?props.onClick:null
 	
 	useEffect(() => {
 		const image = new Image()
@@ -23,7 +23,7 @@ const ImageLoader = (props) => {
 	return (
 		<>
 			{imageSrc ? (
-				<img src={imageSrc} alt={alt} className={className} />
+				<img src={imageSrc} alt={alt} className={className} onClick={onClick} />
 			) : (
 				<img src={ImageLoading} alt={alt} className={className} />
 			)}

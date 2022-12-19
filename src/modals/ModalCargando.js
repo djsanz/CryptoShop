@@ -28,7 +28,7 @@ export default function ModalCargando(props) {
                   ? <img src={MintIMG} alt='LoadingIMG' className={Scale}></img>
                   : Imagen === 'Lock'
                     ? <img src={LockIMG} alt='LoadingIMG' className={Scale}></img>
-                    : <></>
+                    : <img src={MintIMG} alt='LoadingIMG' className={Scale}></img>
       }
     </div>
   );

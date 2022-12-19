@@ -22,8 +22,8 @@ export function PlusIcon(props) {
 	return (
 		<svg width={Tam} height={Tam} className={className} onClick={onClick}>
 			<circle cx={Tam/2} cy={Tam/2} r={2*Tam/5} fill={Color} />
-			<line x1={Tam/5} y1={Tam/2} x2={4*Tam/5} y2={Tam/2} stroke="white" stroke-width={Tam/10} />
-			<line x1={Tam/2} y1={Tam/5} x2={Tam/2} y2={4*Tam/5} stroke="white" stroke-width={Tam/10} />
+			<line x1={Tam/5} y1={Tam/2} x2={4*Tam/5} y2={Tam/2} stroke="white" strokeWidth={Tam/10} />
+			<line x1={Tam/2} y1={Tam/5} x2={Tam/2} y2={4*Tam/5} stroke="white" strokeWidth={Tam/10} />
 		</svg>
 	)
 }
@@ -36,7 +36,7 @@ export function MinusIcon(props) {
 	return (
 		<svg width={Tam} height={Tam} className={className} onClick={onClick}>
 			<circle cx={Tam/2} cy={Tam/2} r={2*Tam/5} fill={Color} />
-			<line x1={Tam/5} y1={Tam/2} x2={4*Tam/5} y2={Tam/2} stroke="white" stroke-width={Tam/10} />
+			<line x1={Tam/5} y1={Tam/2} x2={4*Tam/5} y2={Tam/2} stroke="white" strokeWidth={Tam/10} />
 		</svg>
 	)
 }

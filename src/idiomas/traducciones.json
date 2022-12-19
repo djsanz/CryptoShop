@@ -16,7 +16,14 @@
 	  "Login to proceed checkout": "Login to proceed checkout",
 	  "Discount": "Discount",
 	  "Orders": "Orders",
-	  "Get TestNet USDC": "Get TestNet USDC"
+	  "Get TestNet USDC": "Get \"SanzUSDC\" Coins",
+	  "Connect to Metamask to receive free SanzUSDC tokens": "Connect to Metamask to receive free SanzUSDC tokens",
+	  "Add SanzUSDC to Metamask": "Add SanzUSDC to Metamask",
+	  "My Orders": "My Orders",
+	  "Order": "Order",
+	  "Date": "Date",
+	  "No Orders": "No Orders",
+	  "SinSaldo":"You don't have enough balance to pay, ask for USDC coins on the main page"
     }
   },
   "es": {
@@ -36,7 +43,14 @@
 	  "Login to proceed checkout": "Inicie sesión para continuar con el pago",
 	  "Discount": "Descuento",
 	  "Orders": "Pedidos",
-	  "Get TestNet USDC": "Obtener TestNet USDC"
+	  "Get TestNet USDC": "Obtener monedas \"SanzUSDC\"",
+	  "Connect to Metamask to receive free SanzUSDC tokens":"Conectate a Metamask para poder recivir tokens SanzUSDC gratis",
+	  "Add SanzUSDC to Metamask": "Añadir SanzUSDC a Metamask",
+	  "My Orders": "Mis Pedidos",
+	  "Order": "Pedido",
+	  "Date": "Fecha",
+	  "No Orders": "No hay pedidos",
+	  "SinSaldo":"No tienes saldo suficiente para pagar, pide monedas USDC en la página principal"
     }
   }
 }

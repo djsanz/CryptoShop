@@ -18,12 +18,12 @@ export default function Product() {
 	const navigate = useNavigate();
 
 	const AgregaCesta = () => {
-		addToCartCtx(ProductID);
+		addToCartCtx(ProductID,PrecioReal());
 		navigate('/Cesta')
 	}
 
-	const PrecioReal = (product) => {
-		const Temp = product.price - (product.price * product.discountPercentage / 100)
+	const PrecioReal = () => {
+		const Temp = Product.price - (Product.price * Product.discountPercentage / 100)
 		return Math.round(Temp * 100) / 100;
 	}
 
@@ -50,11 +50,15 @@ export default function Product() {
 							<GaleriaFotos Fotos={Product.images} />
 						</div>
 						<div className="flex-1 p-1 font-light ">{Product.description}</div>
-						<div className="flex-1 p-1 font-light ">{t("Discount")}: {Product.discountPercentage} %</div>
+						{
+							Product.discountPercentage > 0
+							? <div className="flex-1 p-1 font-light ">{t("Discount")}: {Product.discountPercentage} %</div>
+							: <></>
+						}
 						{
 							Product.discountPercentage > 0
 							? <div>
-								<span className=" text-xl text-red-500 line-through decoration-white decoration-dotted ">{Product.price}</span> <span className="text-xl">{PrecioReal(Product)}</span> USDC
+								<span className=" text-xl text-red-500 line-through decoration-white decoration-dotted ">{Product.price}</span> <span className="text-xl">{PrecioReal()}</span> USDC
 							  </div>
 							: <div className="text-center text-xl font-semibold py-1">{Product.price} USDC</div>
 						}

@@ -1,11 +1,15 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { GetDebugLvl } from "../config/Entorno";
 import { useTranslation } from 'react-i18next';
 import DB from "../config/products.json";
 import ImageLoader from "../render/ImagenLoader";
 import UserContext from '../contexts/UserContext';
 import { useNavigate } from "react-router-dom";
+import { ethers } from "ethers";
 import { DeleteIcon, PlusIcon, MinusIcon } from "../helper/Icons";
+import ModalCargando from '../modals/ModalCargando';
+import SanzUSDC from "../config/SanzUSDC.json"
+import CryptoShop from "../config/CryptoShop.json"
 
 
 export default function Cesta() {
@@ -13,9 +17,11 @@ export default function Cesta() {
 	const DebugLvl = GetDebugLvl();
 	// eslint-disable-next-line
 	const { t } = useTranslation();
-	const { userCtx, cartCtx, addToCartCtx, removeFromCartCtx, deleteFromCartCtx } = useContext(UserContext)
+	const { userCtx, cartCtx, addToCartCtx, removeFromCartCtx, deleteFromCartCtx, CartCtxToContractString, resetCartCtx } = useContext(UserContext)
 	const navigate = useNavigate();
-	
+	const [EstadoAprobando, SetEstadoAprobando] = useState(false);
+	const [EstadoPagando, SetEstadoPagando] = useState(false);
+
 	const PrecioReal = (product) => {
 		if (product.discountPercentage === 0) return product.price;
 		const Temp = product.price - (product.price * product.discountPercentage / 100)
@@ -29,9 +35,148 @@ export default function Cesta() {
 		return Math.round(TotalTemp * 100) / 100;
 	}, 0);
 
+	const FechaActual = () => {
+		const Fecha = new Date();
+		const Dia = Fecha.getDate();
+		const Mes = Fecha.getMonth() + 1;
+		const Anio = Fecha.getFullYear();
+		const Hora = Fecha.getHours();
+		const Minuto = Fecha.getMinutes();
+		const FechaFormateada = Anio.toString() + Mes.toString() + Dia.toString() + Hora.toString() + Minuto.toString();
+		return FechaFormateada;
+	}
+
+	const SaldoUSDC = async () => {
+		if (window?.ethereum) {
+			try {
+				const provider = new ethers.providers.Web3Provider(window.ethereum);
+				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
+				const Saldo = await ContratoUSDC.balanceOf(userCtx.account)
+				return Saldo / (10 ** 2)
+			} catch (err) {
+				console.log("SaldoUSDC: CatchCall: " + err.message)
+			}
+		}
+		return 0
+	}
+
+	const AprobedUSDC = async () => {
+		if (window?.ethereum) {
+			try {
+				const provider = new ethers.providers.Web3Provider(window.ethereum);
+				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
+				const Aprobed = await ContratoUSDC.allowance(userCtx.account, process.env.REACT_APP_CRYPTOSHOP)
+				return Aprobed / (10 ** 2)
+			} catch (err) {
+				console.log("AprobedUSDC: CatchCall: " + err.message)
+			}
+		}
+		return 0
+	}
+
+	const HacePago = async () => {
+		const Saldo = await SaldoUSDC();
+		if (Saldo < PrecioTotal) {
+			alert(t("SinSaldo"))
+			navigate('/')
+			return
+		}
+		let RespAprob = false
+		const Aprobed = await AprobedUSDC();
+		if (Aprobed < PrecioTotal) {
+			RespAprob = await Aprobando();
+		}else{
+			RespAprob = true
+		}
+		if (RespAprob) {
+			const RespPay = await Pagando();
+			if (RespPay) {
+				resetCartCtx();
+				navigate('/Pedidos')
+			}
+		}
+	};
+
+	const Aprobando = async () => {
+		if (window?.ethereum) {
+			try {
+				SetEstadoAprobando(true)
+				let EstimacionGas = 300000
+				const provider = new ethers.providers.Web3Provider(window.ethereum);
+				const signer = provider.getSigner()
+				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
+				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
+				EstimacionGas = await ContratoNFTWithSigner.estimateGas.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0))
+				EstimacionGas = EstimacionGas.add(EstimacionGas.div(5))
+				const RespContrato = await ContratoNFTWithSigner.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0),{gasLimit: EstimacionGas})
+				SetEstadoAprobando(false)
+				SetEstadoPagando(true)
+				const TxReceipt = await WaitTX(RespContrato)
+				if (TxReceipt === false) {
+					SetEstadoPagando(false)
+					return false
+				}
+				SetEstadoPagando(false)
+				return true
+			} catch (err) {
+				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
+					console.log("MintTokens: CatchCall: " + err.message)
+				}
+			}
+			SetEstadoAprobando(false)
+			SetEstadoPagando(false)
+		}
+		return false
+	};
+
+	const Pagando = async () => {
+		if (window?.ethereum) {
+			try {
+				SetEstadoAprobando(true)
+				let EstimacionGas = 300000
+				const provider = new ethers.providers.Web3Provider(window.ethereum);
+				const signer = provider.getSigner()
+				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_CRYPTOSHOP, CryptoShop, provider)
+				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
+				EstimacionGas = await ContratoNFTWithSigner.estimateGas.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0))
+				EstimacionGas = EstimacionGas.add(EstimacionGas.div(5))
+				console.log("EstimacionGas: " + EstimacionGas)
+				const RespContrato = await ContratoNFTWithSigner.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0),{gasLimit: EstimacionGas})
+				SetEstadoAprobando(false)
+				SetEstadoPagando(true)
+				const TxReceipt = await WaitTX(RespContrato)
+				if (TxReceipt === false) {
+					SetEstadoPagando(false)
+					return false
+				}
+				SetEstadoPagando(false)
+				return true
+			} catch (err) {
+				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
+					console.log("Pagando: CatchCall: " + err.message)
+				}
+			}
+			SetEstadoAprobando(false)
+			SetEstadoPagando(false)
+		}
+		return false
+	};
+
+	const WaitTX = async (_TX) => {
+		try {
+			const TxReceipt = await _TX.wait()
+			if (DebugLvl >= 2) { console.log("TxReceipt: ", TxReceipt) }
+			return TxReceipt
+		} catch (err) {
+			if (DebugLvl >= 2) { console.log("WaitTX: Error: ", err) }
+			return false
+		}
+	}
 
 	return (
 		<div className="mt-4 text-center flex-1 overflow-hidden">
+			{EstadoAprobando ? <ModalCargando Imagen='Metamask' Scale="scale-75"/> : <></>}
+			{EstadoPagando ? <ModalCargando Imagen='Mint'/> : <></>}
 			<div className="flex flex-col">
 				{
 					cartCtx.length === 0
@@ -50,9 +195,9 @@ export default function Cesta() {
 									<div className="p-3 w-1/6">
 										<div className="text-base md:text-xl lg:text-2xl font-semibold">{t("Quantity")}:</div>
 										<div className="flex flex-col-reverse md:flex-row lg:flex-row items-center justify-center text-center text-blue-500 font-bold mx-2 text-xl md:text-2xl lg:text-4xl">
-											<MinusIcon Tam="30" onClick={() => removeFromCartCtx(item.id)} className="hover:cursor-pointer md:mr-1 lg:mr-1"/>
+											<MinusIcon Tam="30" onClick={() => removeFromCartCtx(item.id)} className="hover:cursor-pointer md:mr-1 lg:mr-1" />
 											{item.cant}
-											<PlusIcon Tam="30" onClick={() => addToCartCtx(item.id)} className="hover:cursor-pointer md:ml-1 lg:ml-1"/>
+											<PlusIcon Tam="30" onClick={() => addToCartCtx(item.id,item.precio)} className="hover:cursor-pointer md:ml-1 lg:ml-1" />
 										</div>
 									</div>
 									<div className="text-base md:text-xl lg:text-2xl font-semibold p-3 w-1/6">
@@ -60,7 +205,7 @@ export default function Cesta() {
 										{PrecioReal(Product)} USDC
 									</div>
 									<div className="flex text-center text-xl font-semibold p-3 items-center justify-end w-1/6">
-										<button onClick={() => deleteFromCartCtx(item.id)} className="border rounded text-white bg-red-700 hover:bg-opacity-60 p-2"><DeleteIcon Tam="20" className=""/></button>
+										<button onClick={() => deleteFromCartCtx(item.id)} className="border rounded text-white bg-red-700 hover:bg-opacity-60 p-2"><DeleteIcon Tam="20" className="" /></button>
 									</div>
 								</div>
 							)
@@ -76,10 +221,10 @@ export default function Cesta() {
 					<div className="flex-1 text-center p-1">
 						{
 							cartCtx.length > 0
-							? userCtx.account != null
-								? <button onClick={() => console.log("Pagar")} className="border rounded p-1 pr-2 mt-1 mb-2 text-white text-lg font-bold bg-green-800 hover:border-black hover:text-black hover:bg-opacity-60">{t("Checkout")}</button>
-								: <div className="mt-1 mb-2">{t("Login to proceed checkout")}</div>
-							: <></>
+								? userCtx.account != null
+									? <button onClick={() => HacePago()} className="border rounded p-1 pr-2 mt-1 mb-2 text-white text-lg font-bold bg-green-800 hover:border-black hover:text-black hover:bg-opacity-60">{t("Checkout")}</button>
+									: <div className="mt-1 mb-2">{t("Login to proceed checkout")}</div>
+								: <></>
 						}
 					</div>
 				</div>
