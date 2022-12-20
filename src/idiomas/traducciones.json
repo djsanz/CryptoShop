@@ -23,7 +23,9 @@
 	  "Order": "Order",
 	  "Date": "Date",
 	  "No Orders": "No Orders",
-	  "SinSaldo":"You don't have enough balance to pay, ask for USDC coins on the main page"
+	  "SinSaldo":"You don't have enough balance to pay, ask for USDC coins on the main page",
+	  "RedSaturada":"Polygon Mumbai Network Saturated, please wait a few minutes",
+	  "Get Goerli ETH": "Get Goerli ETH"
     }
   },
   "es": {
@@ -50,7 +52,9 @@
 	  "Order": "Pedido",
 	  "Date": "Fecha",
 	  "No Orders": "No hay pedidos",
-	  "SinSaldo":"No tienes saldo suficiente para pagar, pide monedas USDC en la página principal"
+	  "SinSaldo":"No tienes saldo suficiente para pagar, pide monedas USDC en la página principal",
+	  "RedSaturada":"Red de Polygon Mumbai saturada, por favor espera unos minutos",
+	  "Get Goerli ETH": "Obtener Goerli ETH"
     }
   }
 }

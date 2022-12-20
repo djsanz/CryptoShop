@@ -5,14 +5,12 @@ import UserContext from '../contexts/UserContext';
 import { ethers } from "ethers";
 import SanzUSDC from "../config/SanzUSDC.json"
 import ModalCargando from '../modals/ModalCargando';
-import GetGasFees from "../config/api";
 
 export default function Home() {
 	// eslint-disable-next-line
 	const DebugLvl = GetDebugLvl();
-	if (DebugLvl >= 2) console.log("Carga: Home");
 	const { t,i18n } = useTranslation();
-	const { userCtx } = useContext(UserContext)
+	const { userCtx, UpdateSaldo } = useContext(UserContext)
 	const [EstadoSendCoins, SetEstadoSendCoins] = useState(false);
 	const [EstadoMinteando, SetEstadoMinteando] = useState(false);
 
@@ -43,22 +41,24 @@ export default function Home() {
 			try {
 				SetEstadoSendCoins(true)
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
-				const { maxFeePerGas, maxPriorityFeePerGas } = await GetGasFees()
 				const signer = provider.getSigner()
 				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
 				const nonce = await signer.getTransactionCount()
-				if (DebugLvl >= 2) console.log("nonce (MintTokens): " + nonce)
-				if (DebugLvl >= 2) console.log("maxFeePerGas (MintTokens): " + maxFeePerGas)
-				if (DebugLvl >= 2) console.log("maxPriorityFeePerGas (MintTokens): " + maxPriorityFeePerGas)
-				const RespContrato = await ContratoNFTWithSigner.mint(100 * (10 ** 2),{ maxFeePerGas:maxFeePerGas, maxPriorityFeePerGas:maxPriorityFeePerGas,nonce:nonce + 1 })
+				if (DebugLvl >= 2) console.log("nonce (MintTokens):",nonce)
+				const RespContrato = await ContratoNFTWithSigner.mint(5000 * (10 ** 2),{nonce:nonce + 1 })
 				SetEstadoSendCoins(false)
 				SetEstadoMinteando(true)
 				await provider.waitForTransaction(RespContrato['hash'])
+				await UpdateSaldo()
 				SetEstadoMinteando(false)
 			}catch(err){
-				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.'){
-					console.log("MintTokens: CatchCall: " + err.message)
+				if (err.code === "ACTION_REJECTED"){
+					console.error("MintTokens: User Denied Transaction")
+				}else if (err.code === -32603){
+						alert(t("RedSaturada"))
+				}else{
+					console.error("MintTokens: CatchCall:",err)
 				}
 			}
 			SetEstadoSendCoins(false)
@@ -99,6 +99,11 @@ export default function Home() {
 								<button onClick={() => AddToken()} className='menu-item border-blue-700 border rounded p-1 bg-gray-700 hover:border-white'>
 									{t("Add SanzUSDC to Metamask")}
 								</button>
+							</div>
+							<div className='m-5'>
+								<a href="https://www.google.es/search?q=goerli+faucet" target="_blank" rel="noreferrer" className='menu-item border-blue-700 border rounded p-1 bg-gray-700 hover:border-white'>
+								{t("Get Goerli ETH")}
+								</a>
 							</div>
 						</div>	
 					}

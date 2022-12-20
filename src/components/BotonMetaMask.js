@@ -4,6 +4,7 @@ import UserContext from '../contexts/UserContext'
 import { useTranslation } from 'react-i18next';
 import Icon from '../images/Icons/metamask.svg'
 // import { ConnectMetamask, AuthenticateUserMetamask, AddNetwork } from '../helper/metamask'
+import NetworkConfig from "../config/NetWork.json";
 
 const DebugLvl = GetDebugLvl();
 
@@ -20,7 +21,7 @@ const ConnectMetamask = async () => {
 
 const AuthenticateUserMetamask = async (_Account) => {
     try{
-        await window.ethereum.request({ method: 'personal_sign', params: [ "Weelcome to CryptoShop",_Account ] });
+        await window.ethereum.request({ method: 'personal_sign', params: [ "Wellcome to CryptoShop",_Account ] });
         return true
     }catch (error){
         console.error("AuthenticateUserMetamask(): Error: ",error);
@@ -28,34 +29,32 @@ const AuthenticateUserMetamask = async (_Account) => {
     }
 }
 
-const AddNetwork = async () => {
-	try {
-		await window.ethereum.request({
-			method: 'wallet_addEthereumChain',
+const ChangeNetwork = async () => {
+	if (window.ethereum) {
+	  try {
+		window.ethereum.request({
+			method: 'wallet_switchEthereumChain',
 			params:
 				[{
-					chainId: "0x13881",
-					chainName: "Mumbai",
-					nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 },
-					rpcUrls: ["https://matic-mumbai.chainstacklabs.com"],
-					blockExplorerUrls: ["https://mumbai.polygonscan.com"]
+					chainId: NetworkConfig.chainId,
 				}]
 		})
-	} catch (error) {
-		console.error("AddNetwork Error:", error);
+	  } catch (error) {
+		console.error(error);
+	  }
 	}
-}
+  };
 
 export default function BotonMetaMask() {
 	// eslint-disable-next-line
 	const { t } = useTranslation();
 	const { userCtx, loginCtx, logoutCtx } = useContext(UserContext)
 	const [NetworkID, setNetworkID] = useState(null)
-    if (window?.ethereum){window?.ethereum?.on('chainChanged', chainId => {setNetworkID(chainId)})}
+    if (window?.ethereum){window?.ethereum?.on('chainChanged', chainId => {console.log("ChainId:",chainId);setNetworkID(chainId)})}
 
 	async function handleClick() {
 		if (window?.ethereum) {
-			if (NetworkID === '0x13881'){
+			if (NetworkID === NetworkConfig.chainId){
 				if (userCtx.account === null) {
 					const TempAccount = await ConnectMetamask()
 					if (TempAccount !== null){
@@ -68,7 +67,7 @@ export default function BotonMetaMask() {
 					logoutCtx()
 				}
 			} else {
-				await AddNetwork()
+				await ChangeNetwork()
 			}
 		} else {
 			window.open('https://metamask.io/download.html', '_blank')
@@ -82,7 +81,7 @@ export default function BotonMetaMask() {
 
 	
 	useEffect(() => {
-		if ((NetworkID !== null) && (NetworkID !== '0x13881')){
+		if ((NetworkID !== null) && (NetworkID !== NetworkConfig.chainId)){
 			logoutCtx()
 		}
 	// eslint-disable-next-line
@@ -105,7 +104,7 @@ export default function BotonMetaMask() {
 			<img src={Icon} className="h-6 inline px-1 pr-2" alt="Metamask Logo"/>
 			{
 				window?.ethereum
-				? NetworkID === '0x13881'
+				? NetworkID === NetworkConfig.chainId
 					? userCtx.account == null
 						? <span>{t("LogIn")}</span>
 						: <span>{t("LogOut")}</span>

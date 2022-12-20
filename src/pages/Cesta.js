@@ -10,7 +10,6 @@ import { DeleteIcon, PlusIcon, MinusIcon } from "../helper/Icons";
 import ModalCargando from '../modals/ModalCargando';
 import SanzUSDC from "../config/SanzUSDC.json"
 import CryptoShop from "../config/CryptoShop.json"
-import GetGasFees from "../config/api";
 
 export default function Cesta() {
 	// eslint-disable-next-line
@@ -91,13 +90,10 @@ export default function Cesta() {
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
 				const signer = provider.getSigner()
 				const nonce = await signer.getTransactionCount()
-				const { maxFeePerGas, maxPriorityFeePerGas } = await GetGasFees()
 				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
 				if (DebugLvl >= 2) console.log("nonce (Aprobando):",nonce)
-				if (DebugLvl >= 2) console.log("maxFeePerGas (Aprobando): " + maxFeePerGas)
-				if (DebugLvl >= 2) console.log("maxPriorityFeePerGas (Aprobando): " + maxPriorityFeePerGas)
-				const RespContrato = await ContratoNFTWithSigner.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0),{ maxFeePerGas:maxFeePerGas, maxPriorityFeePerGas:maxPriorityFeePerGas,nonce:nonce + 1 })
+				const RespContrato = await ContratoNFTWithSigner.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0),{ nonce:nonce + 1 })
 				SetEstadoAprobando(false)
 				SetEstadoPagando(true)
 				const TxReceipt = await WaitTX(RespContrato)
@@ -108,8 +104,12 @@ export default function Cesta() {
 				SetEstadoPagando(false)
 				return true
 			} catch (err) {
-				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
-					console.log("Aprobando: CatchCall: " + err.message)
+				if (err.code === "ACTION_REJECTED"){
+					console.error("Aprobando: User Denied Transaction")
+				}else if (err.code === -32603){
+						alert(t("RedSaturada"))
+				}else{
+					console.error("Aprobando: CatchCall:",err)
 				}
 			}
 			SetEstadoAprobando(false)
@@ -125,13 +125,10 @@ export default function Cesta() {
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
 				const signer = provider.getSigner()
 				const nonce = await signer.getTransactionCount()
-				const { maxFeePerGas, maxPriorityFeePerGas } = await GetGasFees()
 				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_CRYPTOSHOP, CryptoShop, provider)
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
 				if (DebugLvl >= 2) console.log("nonce (Pagando):",nonce)
-				if (DebugLvl >= 2) console.log("maxFeePerGas (Pagando): " + maxFeePerGas)
-				if (DebugLvl >= 2) console.log("maxPriorityFeePerGas (Pagando): " + maxPriorityFeePerGas)
-				const RespContrato = await ContratoNFTWithSigner.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0),{ maxFeePerGas:maxFeePerGas, maxPriorityFeePerGas:maxPriorityFeePerGas,nonce:nonce + 1 })
+				const RespContrato = await ContratoNFTWithSigner.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0),{ nonce:nonce + 1 })
 				SetEstadoAprobando(false)
 				SetEstadoPagando(true)
 				const TxReceipt = await WaitTX(RespContrato)
@@ -142,8 +139,12 @@ export default function Cesta() {
 				SetEstadoPagando(false)
 				return true
 			} catch (err) {
-				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
-					console.log("Pagando: CatchCall: " + err.message)
+				if (err.code === "ACTION_REJECTED"){
+					console.error("Pagando: User Denied Transaction")
+				}else if (err.code === -32603){
+						alert(t("RedSaturada"))
+				}else{
+					console.error("Pagando: CatchCall:",err)
 				}
 			}
 			SetEstadoAprobando(false)
