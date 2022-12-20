@@ -47,7 +47,7 @@ export default function Home() {
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
 				const nonce = await signer.getTransactionCount()
 				if (DebugLvl >= 2) console.log("nonce (MintTokens):",nonce)
-				const RespContrato = await ContratoNFTWithSigner.mint(100 * (10 ** 2),{nonce:nonce + 1 })
+				const RespContrato = await ContratoNFTWithSigner.mint(5000 * (10 ** 2),{nonce:nonce + 1 })
 				SetEstadoSendCoins(false)
 				SetEstadoMinteando(true)
 				await provider.waitForTransaction(RespContrato['hash'])
@@ -129,13 +129,13 @@ export default function Home() {
 					i18n.language === "es"
 					? <p>
 						Ejemplo de como se puede hacer una tienda con ReactJS y pagar en Crypto los productos.<br/>
-						Todo se hace desde la Blockchain de pruebas de Polygon, "Mumbai"<br/>
+						Todo se hace desde la Blockchain de pruebas de Ethereum, "Goerli"<br/>
 						Esto es una prueba y todos los productos aquí mostrados no serán enviados<br/>
 						<br/><br/>
 					</p>
 					: <p>
 						Example of how you can make a store with ReactJS and pay for the products in Crypto.<br/>
-						Everything is done from the Polygon TestNet Blockchain, "Mumbai"<br/>
+						Everything is done from the Ethereum TestNet Blockchain, "Goerli"<br/>
 						This is a test and all the products shown here will not be shipped<br/>
 					</p>
 				}
