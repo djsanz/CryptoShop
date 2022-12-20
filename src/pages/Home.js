@@ -5,6 +5,7 @@ import UserContext from '../contexts/UserContext';
 import { ethers } from "ethers";
 import SanzUSDC from "../config/SanzUSDC.json"
 import ModalCargando from '../modals/ModalCargando';
+import GetGasFees from "../config/api";
 
 export default function Home() {
 	// eslint-disable-next-line
@@ -41,14 +42,16 @@ export default function Home() {
 		if (window?.ethereum) {
 			try {
 				SetEstadoSendCoins(true)
-				let EstimacionGas = 150000
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
+				const { maxFeePerGas, maxPriorityFeePerGas } = await GetGasFees()
 				const signer = provider.getSigner()
 				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
-				EstimacionGas = await ContratoNFTWithSigner.estimateGas.mint(5000 * 10 ** 2)
-				EstimacionGas = EstimacionGas.add(EstimacionGas.div(10))
-				const RespContrato = await ContratoNFTWithSigner.mint(5000 * (10 ** 2),{gasLimit: EstimacionGas})
+				const nonce = await signer.getTransactionCount()
+				if (DebugLvl >= 2) console.log("nonce (MintTokens): " + nonce)
+				if (DebugLvl >= 2) console.log("maxFeePerGas (MintTokens): " + maxFeePerGas)
+				if (DebugLvl >= 2) console.log("maxPriorityFeePerGas (MintTokens): " + maxPriorityFeePerGas)
+				const RespContrato = await ContratoNFTWithSigner.mint(100 * (10 ** 2),{ maxFeePerGas:maxFeePerGas, maxPriorityFeePerGas:maxPriorityFeePerGas,nonce:nonce + 1 })
 				SetEstadoSendCoins(false)
 				SetEstadoMinteando(true)
 				await provider.waitForTransaction(RespContrato['hash'])
@@ -61,7 +64,6 @@ export default function Home() {
 			SetEstadoSendCoins(false)
 			SetEstadoMinteando(false)
 		}
-		
 	}
 
 	return (

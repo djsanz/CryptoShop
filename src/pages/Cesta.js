@@ -10,14 +10,14 @@ import { DeleteIcon, PlusIcon, MinusIcon } from "../helper/Icons";
 import ModalCargando from '../modals/ModalCargando';
 import SanzUSDC from "../config/SanzUSDC.json"
 import CryptoShop from "../config/CryptoShop.json"
-
+import GetGasFees from "../config/api";
 
 export default function Cesta() {
 	// eslint-disable-next-line
 	const DebugLvl = GetDebugLvl();
 	// eslint-disable-next-line
 	const { t } = useTranslation();
-	const { userCtx, cartCtx, addToCartCtx, removeFromCartCtx, deleteFromCartCtx, CartCtxToContractString, resetCartCtx } = useContext(UserContext)
+	const { userCtx, SaldoUSDC, UpdateSaldo, cartCtx, addToCartCtx, removeFromCartCtx, deleteFromCartCtx, CartCtxToContractString, resetCartCtx } = useContext(UserContext)
 	const navigate = useNavigate();
 	const [EstadoAprobando, SetEstadoAprobando] = useState(false);
 	const [EstadoPagando, SetEstadoPagando] = useState(false);
@@ -46,20 +46,6 @@ export default function Cesta() {
 		return FechaFormateada;
 	}
 
-	const SaldoUSDC = async () => {
-		if (window?.ethereum) {
-			try {
-				const provider = new ethers.providers.Web3Provider(window.ethereum);
-				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
-				const Saldo = await ContratoUSDC.balanceOf(userCtx.account)
-				return Saldo / (10 ** 2)
-			} catch (err) {
-				console.log("SaldoUSDC: CatchCall: " + err.message)
-			}
-		}
-		return 0
-	}
-
 	const AprobedUSDC = async () => {
 		if (window?.ethereum) {
 			try {
@@ -85,12 +71,13 @@ export default function Cesta() {
 		const Aprobed = await AprobedUSDC();
 		if (Aprobed < PrecioTotal) {
 			RespAprob = await Aprobando();
-		}else{
+		} else {
 			RespAprob = true
 		}
 		if (RespAprob) {
 			const RespPay = await Pagando();
 			if (RespPay) {
+				await UpdateSaldo();
 				resetCartCtx();
 				navigate('/Pedidos')
 			}
@@ -101,14 +88,16 @@ export default function Cesta() {
 		if (window?.ethereum) {
 			try {
 				SetEstadoAprobando(true)
-				let EstimacionGas = 300000
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
 				const signer = provider.getSigner()
+				const nonce = await signer.getTransactionCount()
+				const { maxFeePerGas, maxPriorityFeePerGas } = await GetGasFees()
 				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
-				EstimacionGas = await ContratoNFTWithSigner.estimateGas.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0))
-				EstimacionGas = EstimacionGas.add(EstimacionGas.div(5))
-				const RespContrato = await ContratoNFTWithSigner.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0),{gasLimit: EstimacionGas})
+				if (DebugLvl >= 2) console.log("nonce (Aprobando):",nonce)
+				if (DebugLvl >= 2) console.log("maxFeePerGas (Aprobando): " + maxFeePerGas)
+				if (DebugLvl >= 2) console.log("maxPriorityFeePerGas (Aprobando): " + maxPriorityFeePerGas)
+				const RespContrato = await ContratoNFTWithSigner.approve(process.env.REACT_APP_CRYPTOSHOP, (PrecioTotal * (10 ** 2)).toFixed(0),{ maxFeePerGas:maxFeePerGas, maxPriorityFeePerGas:maxPriorityFeePerGas,nonce:nonce + 1 })
 				SetEstadoAprobando(false)
 				SetEstadoPagando(true)
 				const TxReceipt = await WaitTX(RespContrato)
@@ -120,7 +109,7 @@ export default function Cesta() {
 				return true
 			} catch (err) {
 				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
-					console.log("MintTokens: CatchCall: " + err.message)
+					console.log("Aprobando: CatchCall: " + err.message)
 				}
 			}
 			SetEstadoAprobando(false)
@@ -133,15 +122,16 @@ export default function Cesta() {
 		if (window?.ethereum) {
 			try {
 				SetEstadoAprobando(true)
-				let EstimacionGas = 300000
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
 				const signer = provider.getSigner()
+				const nonce = await signer.getTransactionCount()
+				const { maxFeePerGas, maxPriorityFeePerGas } = await GetGasFees()
 				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_CRYPTOSHOP, CryptoShop, provider)
 				const ContratoNFTWithSigner = ContratoUSDC.connect(signer);
-				EstimacionGas = await ContratoNFTWithSigner.estimateGas.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0))
-				EstimacionGas = EstimacionGas.add(EstimacionGas.div(5))
-				console.log("EstimacionGas: " + EstimacionGas)
-				const RespContrato = await ContratoNFTWithSigner.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0),{gasLimit: EstimacionGas})
+				if (DebugLvl >= 2) console.log("nonce (Pagando):",nonce)
+				if (DebugLvl >= 2) console.log("maxFeePerGas (Pagando): " + maxFeePerGas)
+				if (DebugLvl >= 2) console.log("maxPriorityFeePerGas (Pagando): " + maxPriorityFeePerGas)
+				const RespContrato = await ContratoNFTWithSigner.registrarCompra(FechaActual(), CartCtxToContractString(), (PrecioTotal * (10 ** 2)).toFixed(0),{ maxFeePerGas:maxFeePerGas, maxPriorityFeePerGas:maxPriorityFeePerGas,nonce:nonce + 1 })
 				SetEstadoAprobando(false)
 				SetEstadoPagando(true)
 				const TxReceipt = await WaitTX(RespContrato)
@@ -175,8 +165,8 @@ export default function Cesta() {
 
 	return (
 		<div className="mt-4 text-center flex-1 overflow-hidden">
-			{EstadoAprobando ? <ModalCargando Imagen='Metamask' Scale="scale-75"/> : <></>}
-			{EstadoPagando ? <ModalCargando Imagen='Mint'/> : <></>}
+			{EstadoAprobando ? <ModalCargando Imagen='Metamask' Scale="scale-75" /> : <></>}
+			{EstadoPagando ? <ModalCargando Imagen='Mint' /> : <></>}
 			<div className="flex flex-col">
 				{
 					cartCtx.length === 0
@@ -197,7 +187,7 @@ export default function Cesta() {
 										<div className="flex flex-col-reverse md:flex-row lg:flex-row items-center justify-center text-center text-blue-500 font-bold mx-2 text-xl md:text-2xl lg:text-4xl">
 											<MinusIcon Tam="30" onClick={() => removeFromCartCtx(item.id)} className="hover:cursor-pointer md:mr-1 lg:mr-1" />
 											{item.cant}
-											<PlusIcon Tam="30" onClick={() => addToCartCtx(item.id,item.precio)} className="hover:cursor-pointer md:ml-1 lg:ml-1" />
+											<PlusIcon Tam="30" onClick={() => addToCartCtx(item.id, item.precio)} className="hover:cursor-pointer md:ml-1 lg:ml-1" />
 										</div>
 									</div>
 									<div className="text-base md:text-xl lg:text-2xl font-semibold p-3 w-1/6">

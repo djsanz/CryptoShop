@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { GetDebugLvl } from "../config/Entorno";
 import { Link } from "react-router-dom";
 import UserContext from '../contexts/UserContext';
@@ -12,7 +12,7 @@ export default function NavBar() {
     // eslint-disable-next-line
     const DebugLvl = GetDebugLvl();
     // eslint-disable-next-line
-    const { userCtx, loginCtx, logoutCtx, cartCtx} = useContext(UserContext)
+    const { userCtx } = useContext(UserContext)
     const { t } = useTranslation();
 
     return (
@@ -23,9 +23,15 @@ export default function NavBar() {
                     <span className="self-center whitespace-nowrap text-xl font-semibold">CryptoShop</span>
                 </Navbar.Brand>
                 <div className="flex md:order-2 m-1 space-x-2">
-					<div className="flex items-center font-light">
-						{userCtx.account != null ? userCtx.account.substring(2, 7)+" ... "+userCtx.account.substring(userCtx.account.length-5,userCtx.account.length) : ""}
-					</div>
+					{
+						userCtx.account != null
+						? <div className="flex items-center font-light">
+							{userCtx.account.substring(2, 7)+" ... "+userCtx.account.substring(userCtx.account.length-5,userCtx.account.length)}
+							<br/>
+							{userCtx.saldo} USDC
+						  </div>
+						: ""
+					}
                 	<div className="flex items-center">
 						<ShoppingCart/>
 					</div>

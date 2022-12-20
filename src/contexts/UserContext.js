@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { GetDebugLvl } from '../config/Entorno'
+import SanzUSDC from "../config/SanzUSDC.json"
+import { ethers } from "ethers";
 
 const UserContext = createContext();
 const DebugLvl = GetDebugLvl(0)
@@ -7,13 +9,15 @@ const DebugLvl = GetDebugLvl(0)
 const UserProvider = ({ children }) => {
     // USUARIO
     const UserInicitalState = {
-        account: null
+        account: null,
+		saldo: 0
     }
     const [userCtx, setuserCtx] = useState(UserInicitalState);
 
-    const loginCtx = (_Account) => {
+    const loginCtx = async (_Account) => {
         setuserCtx({
-            account: _Account
+            account: _Account,
+			saldo: await SaldoUSDC(_Account)
         });
 		if (cartCtx.length === 0){
 			const TempCart = localStorage.getItem(_Account)
@@ -28,6 +32,35 @@ const UserProvider = ({ children }) => {
         setuserCtx(UserInicitalState)
 		setCartCtx(CartInicitalState)
     }
+
+	const UpdateSaldo = async () => {
+		const Saldo = await SaldoUSDC(userCtx.account)
+		setuserCtx({
+			account: userCtx.account,
+			saldo: Saldo
+		})
+	}
+
+	const SaldoUSDC = async (_Account) => {
+		if (DebugLvl > 2) console.log("SaldoUSDC()")
+		if (_Account === undefined) {
+			_Account = userCtx.account
+		}
+		if (_Account === null) {
+			return 0
+		}
+		if (window?.ethereum) {
+			try {
+				const provider = new ethers.providers.Web3Provider(window.ethereum);
+				const ContratoUSDC = new ethers.Contract(process.env.REACT_APP_SANZUDSC, SanzUSDC, provider)
+				const Saldo = await ContratoUSDC.balanceOf(_Account)
+				return Saldo / (10 ** 2)
+			} catch (err) {
+				console.log("SaldoUSDC: CatchCall: " + err.message)
+			}
+		}
+		return 0
+	}
 
 	// CARRITO COMPRA
     const CartInicitalState = []
@@ -97,6 +130,8 @@ const UserProvider = ({ children }) => {
         userCtx,
         loginCtx,
         logoutCtx,
+		SaldoUSDC,
+		UpdateSaldo,
 		cartCtx,
 		addToCartCtx,
 		deleteFromCartCtx,

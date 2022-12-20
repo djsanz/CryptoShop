@@ -18,7 +18,6 @@ export default function Pedidos() {
 	const [ Pedidos, SetPedidos] = useState([]);
 
 	const GetPedidos = async () => {
-		if (DebugLvl >= 2) console.log("GetPedidos()");
 		if (window?.ethereum) {
 			try {
 				const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -28,6 +27,7 @@ export default function Pedidos() {
 				RespContrato.forEach((Pedido) => {
 					if (Pedido.comprador !== "0x0000000000000000000000000000000000000000"){PedidosFinales.push(Pedido)}
 				})
+				PedidosFinales.sort((a, b) => b.id - a.id)
 				SetPedidos(PedidosFinales)
 			} catch (err) {
 				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
@@ -76,11 +76,6 @@ export default function Pedidos() {
 		GetPedidos()
 	}, [])
 
-	// useEffect(() => {
-	// 	console.log("Pedidos: ",Pedidos)
-	// 	console.log("Pedidos?.length: ",Pedidos?.length)
-	// }, [Pedidos])
-
 	return (
 		<div className="mt-4 text-center flex-1 overflow-hidden">
 			<h1 className="text-3xl font-bold underline mb-5">{t("My Orders")}:</h1>
@@ -90,8 +85,8 @@ export default function Pedidos() {
 					return (
 						<div key={index}>
 							<div className="flex text-xl justify-between border border-b-0 rounded-t-lg bg-gray-800 mx-10">
-								<div>{t("Order")}: {String(Pedido.id)}</div>
-								<div>{ParseFecha(String(Pedido.fecha))}</div>
+								<div className="px-3">{t("Order")}: {String(Pedido.id)}</div>
+								<div className="px-3">{ParseFecha(String(Pedido.fecha))}</div>
 							</div>
 							{
 								ParseArticulos(Pedido.articulos).map((item, index) => {
@@ -99,9 +94,7 @@ export default function Pedidos() {
 										<div className="flex border border-b-0 bg-gray-900 mx-10" key={"Product"+String(item.id)}>
 											<div className="p-3 w-3/6">
 												<div className="text-base md:text-xl lg:text-2xl font-semibold">
-													<span className="hover:cursor-pointer" onClick={() => navigate('/Product/'+String(item.id))}>{String(item.title)}</span>
-												</div>
-												<div>
+													<span className="hover:cursor-pointer pr-2" onClick={() => navigate('/Product/'+String(item.id))}>{String(item.title)}</span>
 													<ImageLoader onClick={() => navigate('/Product/'+String(item.id))} src={String(item.thumbnail)} alt={String(item.title)} className="h-20 hover:cursor-pointer"/>
 												</div>
 											</div>
@@ -120,7 +113,7 @@ export default function Pedidos() {
 								})
 							}
 							<div className="flex text-xl justify-center border rounded-b-lg bg-gray-800 mx-10 mb-8" key={index}>
-								{t("Total")}: <span className="ml-3 mr-1 font-bold text-blue-700">{String(PrecioReal(Pedido.total))}</span> USDC
+								{t("Total")}:<span className="ml-2 mr-1 font-bold text-blue-700">{String(PrecioReal(Pedido.total))}</span> USDC
 							</div>
 						</div>
 					)
