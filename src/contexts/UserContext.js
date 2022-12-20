@@ -56,7 +56,7 @@ const UserProvider = ({ children }) => {
 				const Saldo = await ContratoUSDC.balanceOf(_Account)
 				return Saldo / (10 ** 2)
 			} catch (err) {
-				console.log("SaldoUSDC: CatchCall: " + err.message)
+				console.error("SaldoUSDC: CatchCall: " + err.message)
 			}
 		}
 		return 0

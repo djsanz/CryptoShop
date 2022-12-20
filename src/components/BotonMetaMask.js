@@ -50,7 +50,7 @@ export default function BotonMetaMask() {
 	const { t } = useTranslation();
 	const { userCtx, loginCtx, logoutCtx } = useContext(UserContext)
 	const [NetworkID, setNetworkID] = useState(null)
-    if (window?.ethereum){window?.ethereum?.on('chainChanged', chainId => {console.log("ChainId:",chainId);setNetworkID(chainId)})}
+    if (window?.ethereum){window?.ethereum?.on('chainChanged', chainId => {setNetworkID(chainId)})}
 
 	async function handleClick() {
 		if (window?.ethereum) {

@@ -31,7 +31,7 @@ export default function Pedidos() {
 				SetPedidos(PedidosFinales)
 			} catch (err) {
 				if (err.message !== 'MetaMask Tx Signature: User denied transaction signature.') {
-					console.log("GetPedidos: CatchCall: " + err.message)
+					console.error("GetPedidos: CatchCall: " + err.message)
 				}
 			}
 		}
@@ -74,6 +74,7 @@ export default function Pedidos() {
 
 	useEffect(() => {
 		GetPedidos()
+		// eslint-disable-next-line
 	}, [])
 
 	return (

@@ -25,7 +25,8 @@
 	  "No Orders": "No Orders",
 	  "SinSaldo":"You don't have enough balance to pay, ask for USDC coins on the main page",
 	  "RedSaturada":"Polygon Mumbai Network Saturated, please wait a few minutes",
-	  "Get Goerli ETH": "Get Goerli ETH"
+	  "Get Goerli ETH": "Get 0.02 Goerli ETH",
+	  "Max Goerli ETH": "You already have enough GoerliETH (0.02 Max)"
     }
   },
   "es": {
@@ -54,7 +55,8 @@
 	  "No Orders": "No hay pedidos",
 	  "SinSaldo":"No tienes saldo suficiente para pagar, pide monedas USDC en la página principal",
 	  "RedSaturada":"Red de Polygon Mumbai saturada, por favor espera unos minutos",
-	  "Get Goerli ETH": "Obtener Goerli ETH"
+	  "Get Goerli ETH": "Obtener 0.02 Goerli ETH",
+	  "Max Goerli ETH": "Ya tienes suficiente GoerliETH (0.02 Max)"
     }
   }
 }

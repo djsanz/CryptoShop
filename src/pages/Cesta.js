@@ -53,7 +53,7 @@ export default function Cesta() {
 				const Aprobed = await ContratoUSDC.allowance(userCtx.account, process.env.REACT_APP_CRYPTOSHOP)
 				return Aprobed / (10 ** 2)
 			} catch (err) {
-				console.log("AprobedUSDC: CatchCall: " + err.message)
+				console.error("AprobedUSDC: CatchCall: " + err.message)
 			}
 		}
 		return 0
