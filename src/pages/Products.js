@@ -19,7 +19,7 @@ export default function Products() {
 		<div className="mt-4 text-center flex-1 overflow-hidden">
 			<div className="flex flex-wrap justify-center">
 				{DB.products.map((product) => (
-					<div key={product.id} className="flex flex-col border-2 border-gray-400 rounded-lg w-48 m-2 hover:cursor-pointer" onClick={() => navigate('/Product/'+product.id)}>
+					<div key={product.id} className="flex flex-col border-2 border-gray-400 rounded-lg w-[90%] md:w-[30%] lg:w-[20%] xl:w-[15%] m-2 hover:cursor-pointer" onClick={() => navigate('/Product/'+product.id)}>
 						<div className="rounded-t-lg text-xl font-semibold bg-purple-700 pb-1">{product.title}</div>
 						<div className=""><ImageLoader className=" max-h-48" src={product.thumbnail} alt="product.title" /></div>
 						<div className="flex-1 p-1 bg-slate-800 ">{product.description}</div>
